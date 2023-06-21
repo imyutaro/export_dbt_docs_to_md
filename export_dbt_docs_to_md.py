@@ -1,6 +1,8 @@
 """
 Convert dbt docs(manifest.json and catalog.json) to markdown file.
 
+Inspired by https://github.com/rfdearborn/dbt-docs-to-notion/blob/main/dbt_docs_to_notion.py
+
 manifest.json specification: https://docs.getdbt.com/reference/artifacts/manifest-json
 catalog.json specification: https://docs.getdbt.com/reference/artifacts/catalog-json
 """
