@@ -1,5 +1,10 @@
-*.*.swp
+# python generated files
 __pycache__/
-.DS_Store
-tmp/
-tmp*
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# venv
+.venv

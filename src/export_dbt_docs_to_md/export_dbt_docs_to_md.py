@@ -24,13 +24,13 @@ from format_parsed_data import (
 def parse_docs_data():
     # TODO: specify input dir from cmd line.
     with open(
-        # f"{Path(__file__).parent}/../dbt_tutorial_w_duckdb/tutorial/target/manifest.json"
-        f"{Path(__file__).parent}/tmp_dummy_data/manifest_facebook.json"
+        # f"{Path(__file__).parent}/../../../dbt_tutorial_w_duckdb/tutorial/target/manifest.json"
+        f"{Path(__file__).parent}/../../tmp_dummy_data/manifest_facebook.json"
     ) as f2:
         manifest_json = load(f2)
     with open(
-        # f"{Path(__file__).parent}/../dbt_tutorial_w_duckdb/tutorial/target/catalog.json"
-        f"{Path(__file__).parent}/tmp_dummy_data/catalog_facebook.json"
+        # f"{Path(__file__).parent}/../../../dbt_tutorial_w_duckdb/tutorial/target/catalog.json"
+        f"{Path(__file__).parent}/../../tmp_dummy_data/catalog_facebook.json"
     ) as f1:
         catalog_json = load(f1)
 
