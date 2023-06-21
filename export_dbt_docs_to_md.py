@@ -6,38 +6,30 @@ catalog.json specification: https://docs.getdbt.com/reference/artifacts/catalog-
 """
 
 from pprint import pprint
-print=pprint
+
+print = pprint
+from dataclasses import dataclass, asdict
 from json import load
-from dataclasses import dataclass
 
-
-@dataclass(frozen=True)
-class Details:
-    tags: str
-    owner: str
-    type_: str
-    package: str
-    language: str
-    relation: str
 
 @dataclass(frozen=True)
 class Column:
     name: str
-    type_: str
-    descroptoin: str
+    # type_: str = None
+    description: str
+    tags: list[str]
 
 
 @dataclass(frozen=True)
-class Table:
+class ManifestData:
     name: str
-    aaaaa: str                  # TODO: check specification
-    details: Details
-    descroptoin: str
     columns: list[Column]
-    referenced_by:  list[str]   # TODO: check specification
-    depends_on: str
+    depends_on: list[str]
     raw_code: str
     compiled_code: str
+    description: str
+    language: str
+    # TODO: store test info for each columns
 
 
 def main():
@@ -46,10 +38,32 @@ def main():
     with open("../dbt_tutorial_w_duckdb/tutorial/target/catalog.json") as f1:
         catalog_json = load(f1)
 
-    print(manifest_json["nodes"]["model.tutorial.customers"]["columns"])
-    # print(catalog_json)
+    for k, v in manifest_json["nodes"].items():
+        # if k.startswith("seed.") or k.startswith("model."):
+        if k.startswith("model."):
+            # print("")
+            # print(k, sort_dicts=False)
+            # print(v, sort_dicts=False)
+            columns = []
+            for i in v["columns"].values():
+                columns.append(
+                    Column(
+                        name=i["name"],
+                        description=i["description"],
+                        tags=i["tags"],
+                    )
+                )
+            d = ManifestData(
+                name=k,
+                columns=columns,
+                raw_code=v["raw_code"],
+                compiled_code=v["compiled_code"],
+                depends_on=v["depends_on"]["nodes"],
+                description=v["description"],
+                language=v["language"]
+            )
+            # print(asdict(d), sort_dicts=False)
 
-
+    for k, v in catalog_json["nodes"].items():
 
 main()
-
