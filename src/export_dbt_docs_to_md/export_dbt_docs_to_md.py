@@ -21,18 +21,12 @@ from format_parsed_data import (
 )
 
 
-def parse_docs_data():
-    # TODO: specify input dir from cmd line.
-    with open(
-        # f"{Path(__file__).parent}/../../../dbt_tutorial_w_duckdb/tutorial/target/manifest.json"
-        f"{Path(__file__).parent}/../../tmp_dummy_data/manifest_facebook.json"
-    ) as f2:
-        manifest_json = load(f2)
-    with open(
-        # f"{Path(__file__).parent}/../../../dbt_tutorial_w_duckdb/tutorial/target/catalog.json"
-        f"{Path(__file__).parent}/../../tmp_dummy_data/catalog_facebook.json"
-    ) as f1:
-        catalog_json = load(f1)
+def parse_docs_data(manifest_json_path: str, catalog_json_path: str):
+    with open(manifest_json_path) as f1:
+        manifest_json = load(f1)
+
+    with open(catalog_json_path) as f2:
+        catalog_json = load(f2)
 
     parsed_json_dict = {
         "nodes": {},
@@ -225,4 +219,27 @@ def parse_docs_data():
             format_source_data(parent_node, node_data, referenced_by)
 
 
-parse_docs_data()
+def main():
+    from argparse import ArgumentParser
+
+    from pydantic import BaseModel
+
+    # This argments implementation is referenced by
+    # https://qiita.com/ShotaOki/items/c777d600b2f854d30241
+    class Argments(BaseModel):
+        manifest_json_path: str
+        catalog_json_path: str
+
+        @classmethod
+        def parse_args(cls):
+            parser = ArgumentParser()
+            for k in cls.schema()["properties"].keys():
+                parser.add_argument(f"-{k[0:1]}", f"--{k}")
+            return cls.parse_obj(parser.parse_args().__dict__)
+
+    args = Argments.parse_args()
+    parse_docs_data(args.manifest_json_path, args.catalog_json_path)
+
+
+if __name__ == "__main__":
+    main()
