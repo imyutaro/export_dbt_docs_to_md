@@ -21,6 +21,7 @@ TODO
 - [ ] write test
   - check how dbt-docs do CI/testing
   - https://github.com/dbt-labs/dbt-docs/tree/main/data
+  - https://github.com/fivetran/dbt_facebook_ads/tree/main/docs
 - [ ] export_dbt_docs_to_md.py:96:  # TODO: Currently, I cannot find a way to extract referenced_by info from manifest.json and catalog.json
 - [ ] export_dbt_docs_to_md.py:163: # TODO: deal with other nodes property analysis, exposure, metric and docs.
 - [ ] export_dbt_docs_to_md.py:181: # TODO: Refactor. This is too complex to understand what is doing here.
