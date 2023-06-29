@@ -21,7 +21,7 @@ from format_parsed_data import (
 )
 
 
-def parse_docs_data(manifest_json_path: str, catalog_json_path: str):
+def parse_docs_data(manifest_json_path: str | Path, catalog_json_path: str | Path, output_dir_path: str | Path):
     with open(manifest_json_path) as f1:
         manifest_json = load(f1)
 
@@ -158,10 +158,7 @@ def parse_docs_data(manifest_json_path: str, catalog_json_path: str):
     )
 
     for name, macro_data in parsed_json.macros.items():
-        format_macro_data(
-            name=name,
-            macro_data=macro_data,
-        )
+        format_macro_data(name=name, macro_data=macro_data, output_dir_path=output_dir_path)
 
     # TODO: deal with other nodes property analysis, exposure, metric and docs.
     for parent_node, child_node_list in parsed_json.child_map.items():
@@ -181,7 +178,7 @@ def parse_docs_data(manifest_json_path: str, catalog_json_path: str):
                 if target_col_name is None:
                     continue
 
-                # TODO: Refactor. This is too complex to understand what it's doing here.
+                # TODO: Refactor. This is too complex to understand what is doing here.
                 #       This process is "Store relationship between tests and tables".
                 if parent_node.startswith("model."):
                     parsed_json.nodes[parent_node].columns[target_col_name].test.add(
@@ -195,8 +192,7 @@ def parse_docs_data(manifest_json_path: str, catalog_json_path: str):
                 # remove test id at the end of child_node name
                 test_name_removed_test_id = ".".join(child_node.split(".")[:-1])
                 format_test_data(
-                    test_name_removed_test_id,
-                    parsed_json.tests[child_node],
+                    test_name_removed_test_id, parsed_json.tests[child_node], output_dir_path=output_dir_path
                 )
                 referenced_by["tests"].append(test_name_removed_test_id)
 
@@ -210,35 +206,43 @@ def parse_docs_data(manifest_json_path: str, catalog_json_path: str):
 
         if parent_node.startswith("model."):
             node_data = parsed_json.nodes[parent_node]
-            format_models_data(parent_node, node_data, referenced_by)
+            format_models_data(parent_node, node_data, referenced_by, output_dir_path)
         if parent_node.startswith("seed."):
             node_data = parsed_json.nodes[parent_node]
-            format_seeds_data(parent_node, node_data, referenced_by)
+            format_seeds_data(parent_node, node_data, referenced_by, output_dir_path)
         if parent_node.startswith("source."):
             node_data = parsed_json.sources[parent_node]
-            format_source_data(parent_node, node_data, referenced_by)
+            format_source_data(parent_node, node_data, referenced_by, output_dir_path)
 
 
 def main():
     from argparse import ArgumentParser
 
-    from pydantic import BaseModel
+    from pydantic import BaseModel, Field
 
     # This argments implementation is referenced by
     # https://qiita.com/ShotaOki/items/c777d600b2f854d30241
     class Argments(BaseModel):
-        manifest_json_path: str
-        catalog_json_path: str
+        manifest_json: str
+        catalog_json: str
+        output_dir: str = "output"
 
         @classmethod
         def parse_args(cls):
             parser = ArgumentParser()
             for k in cls.schema()["properties"].keys():
                 parser.add_argument(f"-{k[0:1]}", f"--{k}")
-            return cls.parse_obj(parser.parse_args().__dict__)
+            _args = {k: v for k, v in parser.parse_args().__dict__.items() if v is not None}
+            return cls.parse_obj(_args)
 
     args = Argments.parse_args()
-    parse_docs_data(args.manifest_json_path, args.catalog_json_path)
+    manifest_json_path = Path(args.manifest_json)
+    catalog_json_path = Path(args.catalog_json)
+    output_dir_path = Path(args.output_dir)
+
+    output_dir_path.mkdir(exist_ok=True, parents=True)
+
+    parse_docs_data(manifest_json_path, catalog_json_path, output_dir_path)
 
 
 if __name__ == "__main__":

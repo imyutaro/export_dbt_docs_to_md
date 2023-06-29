@@ -11,7 +11,7 @@ def model2filepath(data_model_list: list[str]) -> list[str]:
     """
     if type(data_model_list) is not list:
         raise TypeError(f"Invalid type: {type(data_model_list)}")
-    if len(data_model_list) == 0 :
+    if len(data_model_list) == 0:
         return ["&nbsp;"]
 
     return [i.replace(".", "/") for i in data_model_list]
@@ -20,25 +20,20 @@ def model2filepath(data_model_list: list[str]) -> list[str]:
 def format_column_info(column_info_list: list[Column]):
     formatted_str = ""
     for column_info in column_info_list.values():
-        formatted_str += dedent(
-            "| {name} | {type_} | {description} | {test} |\n"
-        ).format(
+        formatted_str += dedent("| {name} | {type_} | {description} | {test} |\n").format(
             name=column_info.name,
             type_=column_info.type_,
             description=column_info.description_from_manifest
-            if column_info.description_from_manifest is not None
-            and column_info.description_from_manifest != ""
+            if column_info.description_from_manifest is not None and column_info.description_from_manifest != ""
             else "&nbsp;",
-            test="<br>".join(column_info.test)
-            if len(column_info.test) > 0
-            else "&nbsp;",
+            test="<br>".join(column_info.test) if len(column_info.test) > 0 else "&nbsp;",
         )
     return formatted_str
 
 
 # TODO: separate nodes and source function because nodes and source docs are slightly different format.
 def format_models_data(
-    name: str, manifest_data: ManifestData, referenced_by: dict[str, str]
+    name: str, manifest_data: ManifestData, referenced_by: dict[str, str], output_dir_path: str | Path
 ) -> str:
     markdown_str = dedent(
         """
@@ -98,15 +93,15 @@ def format_models_data(
         compiled_code=sub(r"^\n", "", manifest_data.compiled_code.strip(), flags=M),
     )
 
-    # TODO: specify output dir from cmd line.
-    output_dir = Path(__file__).parent / "tmp" / manifest_data.package_name
-    file_path = output_dir / f"{model2filepath([name])[0]}.md"
+    output_dir_path = output_dir_path / manifest_data.package_name
+    file_path = output_dir_path / f"{model2filepath([name])[0]}.md"
     file_path.parent.mkdir(exist_ok=True, parents=True)
     with open(file_path, mode="w") as f:
         f.write(markdown_str)
 
+
 def format_seeds_data(
-    name: str, manifest_data: ManifestData, referenced_by: dict[str, str]
+    name: str, manifest_data: ManifestData, referenced_by: dict[str, str], output_dir_path: str | Path
 ) -> str:
     markdown_str = dedent(
         """
@@ -152,15 +147,15 @@ def format_seeds_data(
         schema=manifest_data.schema_,
     )
 
-    # TODO: specify output dir from cmd line.
-    output_dir = Path(__file__).parent / "tmp" / manifest_data.package_name
-    file_path = output_dir / f"{model2filepath([name])[0]}.md"
+    output_dir_path = Path(__file__).parent / "tmp" / manifest_data.package_name
+    file_path = output_dir_path / f"{model2filepath([name])[0]}.md"
     file_path.parent.mkdir(exist_ok=True, parents=True)
     with open(file_path, mode="w") as f:
         f.write(markdown_str)
 
+
 def format_source_data(
-    name: str, source_data: SourceData, referenced_by: dict[str, str]
+    name: str, source_data: SourceData, referenced_by: dict[str, str], output_dir_path: str | Path
 ) -> str:
     markdown_str = dedent(
         """
@@ -201,9 +196,7 @@ def format_source_data(
         # type_=source_data.resource_type, # there is no info that is table or view or sth...
         package=source_data.package_name,
         relation=source_data.name,
-        loader=source_data.loader
-        if source_data.loader is not None and source_data.loader != ""
-        else "&nbsp;",
+        loader=source_data.loader if source_data.loader is not None and source_data.loader != "" else "&nbsp;",
         source_name=source_data.source_name,
         description=source_data.description
         if source_data.description is not None and source_data.description != ""
@@ -216,15 +209,14 @@ def format_source_data(
         schema=source_data.schema_,
     )
 
-    # TODO: specify output dir from cmd line.
-    output_dir = Path(__file__).parent / "tmp" / source_data.package_name
-    file_path = output_dir / f"{model2filepath([name])[0]}.md"
+    output_dir_path = output_dir_path / source_data.package_name
+    file_path = output_dir_path / f"{model2filepath([name])[0]}.md"
     file_path.parent.mkdir(exist_ok=True, parents=True)
     with open(file_path, mode="w") as f:
         f.write(markdown_str)
 
 
-def format_test_data(name: str, test_data: Test) -> str:
+def format_test_data(name: str, test_data: Test, output_dir_path: str | Path) -> str:
     markdown_str = dedent(
         """
     # {test_name}
@@ -259,14 +251,14 @@ def format_test_data(name: str, test_data: Test) -> str:
         compiled_code=sub(r"^\n", "", test_data.compiled_code.strip(), flags=M),
     )
 
-    # TODO: specify output dir from cmd line.
-    output_dir = Path(__file__).parent / "tmp" / "tests"
-    file_path = output_dir / f"{model2filepath([name])[0]}.md"
+    output_dir_path = output_dir_path / "tests"
+    file_path = output_dir_path / f"{model2filepath([name])[0]}.md"
     file_path.parent.mkdir(exist_ok=True, parents=True)
     with open(file_path, mode="w") as f:
         f.write(markdown_str)
 
-def format_macro_data(name: str, macro_data: Macro) -> str:
+
+def format_macro_data(name: str, macro_data: Macro, output_dir_path: str | Path) -> str:
     markdown_str = dedent(
         """
     # {macro_name}
@@ -310,9 +302,8 @@ def format_macro_data(name: str, macro_data: Macro) -> str:
         macro_sql=dedent(macro_data.macro_sql),
     )
 
-    # TODO: specify output dir from cmd line.
-    output_dir = Path(__file__).parent / "tmp" / macro_data.package_name
-    file_path = output_dir / f"{model2filepath([name])[0]}.md"
+    output_dir_path = output_dir_path / macro_data.package_name
+    file_path = output_dir_path / f"{model2filepath([name])[0]}.md"
     file_path.parent.mkdir(exist_ok=True, parents=True)
     with open(file_path, mode="w") as f:
         f.write(markdown_str)
