@@ -147,7 +147,7 @@ def format_seeds_data(
         schema=manifest_data.schema_,
     )
 
-    output_dir_path = Path(__file__).parent / "tmp" / manifest_data.package_name
+    output_dir_path = output_dir_path / manifest_data.package_name
     file_path = output_dir_path / f"{model2filepath([name])[0]}.md"
     file_path.parent.mkdir(exist_ok=True, parents=True)
     with open(file_path, mode="w") as f:
